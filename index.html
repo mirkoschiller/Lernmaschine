@@ -16,6 +16,7 @@
     .header { text-align:center; color:#fff; margin-bottom:30px; }
     .header h1 { font-size:2.5em; text-shadow:2px2px4px rgba(0,0,0,0.3); }
     .header p { font-size:1.1em; opacity:0.9; }
+    .version-badge { display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.2); color:#fff; font-size:.85em; font-weight:600; letter-spacing:.3px; }
 
     .main-content { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
     .section { background:#fff; border-radius:15px; padding:25px; box-shadow:0 8px 25px rgba(0,0,0,0.1); }
@@ -29,6 +30,7 @@
     .btn-success { background:linear-gradient(45deg,#48bb78,#38a169); color:#fff; }
     .btn-danger  { background:linear-gradient(45deg,#f56565,#e53e3e); color:#fff; }
     .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .hidden { display:none; }
 
     /* Klassenverwaltung */
     .class-container { margin-bottom:20px; border:2px solid #e2e8f0; border-radius:10px; padding:15px; transition:all .3s ease; }
@@ -70,6 +72,7 @@
     <div class="header">
       <h1>🤖 Lernmaschine</h1>
       <p>Trainiere dein eigenes Bilderkennungsmodell</p>
+      <span class="version-badge">Version 1.1</span>
     </div>
 
     <div class="main-content">
@@ -123,6 +126,9 @@
     let classes = [];
     let classifier, mobilenetModel;
     let isWebcamActive = false, webcamStream, predictionLoop;
+    const MAX_CLASSES = 5;
+    const MIN_IMAGES_PER_CLASS = 5;
+    const MAX_IMAGES_PER_CLASS = 20;
 
     async function initializeApp() {
       // Load MobileNet + KNN
@@ -134,7 +140,7 @@
     }
 
     function addClass() {
-      if (classes.length >= 5) { showStatus('Max. 5 Klassen erlaubt.', 'error'); return; }
+      if (classes.length >= MAX_CLASSES) { showStatus(`Max. ${MAX_CLASSES} Klassen erlaubt.`, 'error'); return; }
       classes.push({ name:`Klasse ${classes.length+1}`, images:[], features:[] });
       renderClasses();
     }
@@ -189,15 +195,15 @@
 
     async function uploadImages(idx,input){
       for(const f of input.files){
-        if(classes[idx].images.length>=20){ showStatus('Max.20 Bilder/Klasse.', 'error'); break; }
+        if(classes[idx].images.length>=MAX_IMAGES_PER_CLASS){ showStatus(`Max.${MAX_IMAGES_PER_CLASS} Bilder/Klasse.`, 'error'); break; }
         const src=await new Promise(r=>{
           const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsDataURL(f);
         });
         classes[idx].images.push(src);
         const feats=await extractFeatures(src);
         classes[idx].features.push(feats);
-        renderPreview(idx);
       }
+      renderPreview(idx);
       updateTrainButton();
     }
 
@@ -212,6 +218,10 @@
         const close=document.createElement('button'); close.className='btn btn-danger'; close.innerText='❌';
         overlay.append(vid,cap,close); document.body.append(overlay);
         cap.onclick=async()=>{
+          if(classes[idx].images.length>=MAX_IMAGES_PER_CLASS){
+            showStatus(`Max.${MAX_IMAGES_PER_CLASS} Bilder/Klasse.`, 'error');
+            return;
+          }
           const cvs=document.createElement('canvas'); cvs.width=224; cvs.height=224;
           cvs.getContext('2d').drawImage(vid,0,0,224,224);
           const src=cvs.toDataURL();
@@ -240,19 +250,21 @@
 
     function updateTrainButton(){
       const btn=document.getElementById('train-btn');
-      const ready=classes.every(c=>c.images.length>=5);
+      const ready=classes.every(c=>c.images.length>=MIN_IMAGES_PER_CLASS);
       btn.disabled=!ready;
     }
 
     async function trainModel(){
       const btn=document.getElementById('train-btn'), bar=document.getElementById('training-progress');
       btn.disabled=true; showStatus('Training startet…','info');
+      classifier.clearAllClasses();
       for(let p=0;p<=100;p+=10){ bar.style.width=p+'%'; await new Promise(r=>setTimeout(r,200)); }
       // KNN-Daten einfügen
       classes.forEach((c,i)=>{
         c.features.forEach(f=>{
           const tensor=tf.tensor(f,[1,f.length]);
           classifier.addExample(tensor,i);
+          tensor.dispose();
         });
       });
       showStatus('Training fertig!','success');
@@ -282,6 +294,8 @@
       const activation=mobilenetModel.infer(t,true);
       const res=await classifier.predictClass(activation);
       displayResults(res.confidences);
+      activation.dispose();
+      t.dispose();
       
     }
 
@@ -312,6 +326,7 @@
       const activation=tf.tensor(feats,[1,feats.length]);
       const res=await classifier.predictClass(activation);
       displayResults(res.confidences);
+      activation.dispose();
       
     }
   </script>
