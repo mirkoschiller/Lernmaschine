@@ -64,16 +64,6 @@ http://localhost:8000
   - unterschiedliche Perspektiven,
   - konsistente Beleuchtung.
 
-## Projektstruktur
-
-```text
-.
-├── index.html   # Komplette App (UI, Logik)
-├── style.css   # Design (Styling)
-├── README.md
-└── LICENSE
-```
-
 ## Lizenz
 
 Dieses Projekt steht unter der in `LICENSE` enthaltenen Lizenz.
