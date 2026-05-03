@@ -68,7 +68,8 @@ http://localhost:8000
 
 ```text
 .
-├── index.html   # Komplette App (UI, Styling, Logik)
+├── index.html   # Komplette App (UI, Logik)
+├── style.css   # Design (Styling)
 ├── README.md
 └── LICENSE
 ```
