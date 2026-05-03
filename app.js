@@ -17,7 +17,6 @@ async function loadExternalScript(src) {
 }
 
 let classes = [];
-    let modelReady = false;
     let classifier, mobilenetModel;
     let isWebcamActive = false, webcamStream, predictionLoop;
     const MAX_CLASSES = 5;
@@ -25,28 +24,23 @@ let classes = [];
     const MAX_IMAGES_PER_CLASS = 20;
 
 async function initializeApp() {
-      setupEventListeners();
+      setControlsDisabled(true);
+      showStatus('Lade KI-Modelle …', 'info');
+      for (const lib of TF_LIBRARIES) {
+        await loadExternalScript(lib);
+      }
+      // Load MobileNet + KNN
+      mobilenetModel = await mobilenet.load();
+      classifier     = knnClassifier.create();
+      // zwei Default-Klassen in einem Render-Schritt
       classes = [
         { name:`Klasse 1`, images:[], features:[] },
         { name:`Klasse 2`, images:[], features:[] }
       ];
+      setupEventListeners();
       renderClasses();
-      setModelControlsEnabled(false);
-      showStatus('Lade KI-Modelle …', 'info');
-      try {
-        for (const lib of TF_LIBRARIES) {
-          await loadExternalScript(lib);
-        }
-        mobilenetModel = await mobilenet.load();
-        classifier     = knnClassifier.create();
-        modelReady = true;
-        setModelControlsEnabled(true);
-        updateTrainButton();
-        showStatus('Lernmaschine ist bereit.', 'success');
-      } catch (e) {
-        console.error(e);
-        showStatus('Modelle konnten nicht geladen werden. Daten sammeln funktioniert trotzdem.', 'error');
-      }
+      setControlsDisabled(false);
+      showStatus('Lernmaschine ist bereit.', 'success');
     }
 
     function addClass() {
@@ -103,10 +97,10 @@ async function initializeApp() {
       setTimeout(()=>div.remove(),3000);
     }
 
-    function setModelControlsEnabled(enabled){
-      ['train-btn','webcam-btn','test-upload-btn'].forEach(id=>{
+    function setControlsDisabled(disabled){
+      ['add-class-btn','clear-data-btn','train-btn','webcam-btn','test-upload-btn'].forEach(id=>{
         const el=document.getElementById(id);
-        if(el) el.disabled=!enabled;
+        if(el) el.disabled=disabled;
       });
     }
 
@@ -133,7 +127,6 @@ async function initializeApp() {
     }
 
     async function uploadImages(idx,input){
-      if(!modelReady){ showStatus('Bitte warte, bis die KI-Modelle geladen sind.', 'info'); return; }
       const files=[...input.files];
       const queue=files.map((f)=>async()=>{
         if(classes[idx].images.length>=MAX_IMAGES_PER_CLASS){ return; }
@@ -205,7 +198,7 @@ async function initializeApp() {
     function updateTrainButton(){
       const btn=document.getElementById('train-btn');
       const ready=classes.every(c=>c.images.length>=MIN_IMAGES_PER_CLASS);
-      btn.disabled=!(ready && modelReady);
+      btn.disabled=!ready;
     }
 
     async function trainModel(){
