@@ -1,78 +1,88 @@
 # Lernmaschine 🤖
 
-Eine browserbasierte Lern-App, mit der du **ohne Backend** ein eigenes Bildklassifizierungsmodell trainieren kannst.
-Die Anwendung nutzt **TensorFlow.js**, **MobileNet** (Feature-Extraktion) und einen **KNN-Classifier** direkt im Browser.
+A browser-based learning app that allows you to train your own **image classification model** — entirely **client-side, with no backend required**.
 
-## Funktionen
+The application uses **TensorFlow.js**, **MobileNet** for feature extraction, and a **K-Nearest Neighbors (KNN) classifier** — all running directly in the browser.
 
-- Bis zu **5 Klassen** anlegbar.
-- Pro Klasse **5 bis 20 Bilder** sammelbar.
-- Bilder pro Klasse über
-  - Dateiupload oder
-  - Webcam-Aufnahme.
-- Training direkt im Browser (kein Server nötig).
-- Testen per Live-Webcam oder hochgeladenem Bild.
-- Modernes, responsives UI.
+---
 
-## Voraussetzungen
+## 🚀 Features
 
-- Ein aktueller Browser (Chrome, Edge, Firefox, Safari).
-- Für Webcam-Funktionen: Erlaubnis auf Kamerazugriff.
-- Internetverbindung für CDN-Imports von:
+- Create up to **5 classes**
+- Collect **5–20 images per class**
+- Add images via:
+  - File upload
+  - Live webcam capture
+- **In-browser training** (no server required)
+- Test your model using:
+  - Live webcam
+  - Uploaded images
+- Modern, responsive user interface
+
+---
+
+## ⚙️ Requirements
+
+- A modern browser (Chrome, Edge, Firefox, Safari)
+- Camera access (for webcam functionality)
+- Internet connection (for CDN imports):
   - `@tensorflow/tfjs`
   - `@tensorflow-models/mobilenet`
   - `@tensorflow-models/knn-classifier`
 
-## Projekt starten
+---
 
-Da das Projekt eine statische Webanwendung ist, reicht es, die `index.html` zu öffnen.
+## ▶️ Getting Started
 
-### Option A: Direkt öffnen
+This is a static web application — no build step required.
 
-1. Repository lokal klonen/downloaden.
-2. `index.html` im Browser öffnen.
+### Option A: Open directly
 
-### Option B: Lokaler Webserver (empfohlen)
+1. Clone or download the repository  
+2. Open `index.html` in your browser  
+
+### Option B: Run a local web server (recommended)
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Dann im Browser öffnen:
+Then open:
 
-```text
+```
 http://localhost:8000
 ```
 
-## Nutzung
+---
 
-1. **Daten sammeln**
-   - Klassen benennen/anlegen.
-   - Pro Klasse mindestens 5 Bilder hochladen oder per Webcam aufnehmen.
-2. **Modell trainieren**
-   - Button „Modell trainieren“ wird aktiv, sobald genügend Bilder vorhanden sind.
-3. **Modell testen**
-   - Webcam-Test starten oder ein einzelnes Bild hochladen.
-   - Ergebnisse werden mit Wahrscheinlichkeiten angezeigt.
+## 🧠 Usage
 
-## Hinweise
+### 1. Collect Data
+- Create and name your classes  
+- Add at least **5 images per class** via upload or webcam  
 
-- Das Modell wird nur im aktuellen Browser-Kontext gehalten.
-- Nach Neuladen der Seite gehen Trainingsdaten verloren.
-- Für bessere Ergebnisse helfen:
-  - ausgewogene Bildanzahl pro Klasse,
-  - unterschiedliche Perspektiven,
-  - konsistente Beleuchtung.
+### 2. Train the Model
+- The **“Train Model”** button becomes active once enough data is available  
+- Start training directly in the browser  
 
-## Projektstruktur
+### 3. Test the Model
+- Use the webcam or upload a test image  
+- Predictions are displayed with confidence scores  
 
-```text
-.
-├── index.html   # Komplette App (UI, Styling, Logik)
-├── README.md
-└── LICENSE
-```
+---
 
-## Lizenz
+## ⚠️ Notes
 
-Dieses Projekt steht unter der in `LICENSE` enthaltenen Lizenz.
+- The model exists **only in the current browser session**  
+- Reloading the page will **reset all training data**  
+
+### Tips for better results:
+- Use a balanced number of images per class  
+- Include varied perspectives  
+- Ensure consistent lighting conditions  
+
+---
+
+## 📄 License
+
+This project is licensed under the terms specified in the `LICENSE` file.

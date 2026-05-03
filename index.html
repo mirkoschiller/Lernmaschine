@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lernmaschine</title>
+  <!-- TensorFlow.js & KNN Classifier -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.2/dist/knn-classifier.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 
 </head>
@@ -62,52 +66,6 @@
     </div>
   </div>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const container = document.getElementById('classes-container');
-        const addBtn = document.getElementById('add-class-btn');
-        const maxClasses = 5;
-
-        function renderFallbackClasses() {
-          if (container.children.length > 0) return;
-          const existing = [1, 2];
-          existing.forEach((n) => {
-            const div = document.createElement('div');
-            div.className = 'class-container';
-            div.innerHTML = `
-              <div class="class-header">
-                <input class="class-name" value="Klasse ${n}">
-                <div class="image-count">0 Bilder</div>
-              </div>
-              <div class="upload-area">
-                <button class="btn btn-secondary" disabled>📁 Hochladen</button>
-                <button class="btn btn-secondary" disabled>📸 Webcam</button>
-              </div>
-            `;
-            container.appendChild(div);
-          });
-        }
-
-        addBtn.addEventListener('click', () => {
-          if (container.children.length >= maxClasses) return;
-          const div = document.createElement('div');
-          div.className = 'class-container';
-          div.innerHTML = `
-            <div class="class-header">
-              <input class="class-name" value="Klasse ${container.children.length + 1}">
-              <div class="image-count">0 Bilder</div>
-            </div>
-            <div class="upload-area">
-              <button class="btn btn-secondary" disabled>📁 Hochladen</button>
-              <button class="btn btn-secondary" disabled>📸 Webcam</button>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-
-        setTimeout(renderFallbackClasses, 800);
-      });
-    </script>
     <script src="app.js" defer></script>
 </body>
 </html>
