@@ -8,64 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.2/dist/knn-classifier.min.js"></script>
-  <style>
-    /* --- Grundlayout & Farben (aus Upload) --- */
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: 'Segoe UI',sans-serif; background:linear-gradient(135deg,#667eea,#764ba2); color:#333; }
-    .container { max-width:1400px; margin:0 auto; padding:20px; }
-    .header { text-align:center; color:#fff; margin-bottom:30px; }
-    .header h1 { font-size:2.5em; text-shadow:2px2px4px rgba(0,0,0,0.3); }
-    .header p { font-size:1.1em; opacity:0.9; }
-    .version-badge { display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.2); color:#fff; font-size:.85em; font-weight:600; letter-spacing:.3px; }
+    <link rel="stylesheet" href="styles.css">
 
-    .main-content { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
-    .section { background:#fff; border-radius:15px; padding:25px; box-shadow:0 8px 25px rgba(0,0,0,0.1); }
-    .section h2 { font-size:1.5em; color:#4a5568; margin-bottom:15px; display:flex; align-items:center; }
-    .step-number { display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(45deg,#667eea,#764ba2); color:#fff; width:30px; height:30px; border-radius:50%; margin-right:10px; }
-
-    /* Buttons */
-    .btn { padding:12px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; text-transform:uppercase; letter-spacing:.5px; }
-    .btn-primary { background:linear-gradient(45deg,#667eea,#764ba2); color:#fff; }
-    .btn-secondary { background:#f7fafc; color:#4a5568; border:2px solid #e2e8f0; }
-    .btn-success { background:linear-gradient(45deg,#48bb78,#38a169); color:#fff; }
-    .btn-danger  { background:linear-gradient(45deg,#f56565,#e53e3e); color:#fff; }
-    .btn:disabled { opacity:.5; cursor:not-allowed; }
-    .hidden { display:none; }
-
-    /* Klassenverwaltung */
-    .class-container { margin-bottom:20px; border:2px solid #e2e8f0; border-radius:10px; padding:15px; transition:all .3s ease; }
-    .class-header { display:flex; align-items:center; gap:15px; margin-bottom:15px; }
-    .class-name { flex:1; padding:8px 12px; border:2px solid #e2e8f0; border-radius:8px; font-size:1em; }
-    .image-count { background:#f7fafc; padding:6px 10px; border-radius:6px; font-weight:bold; }
-    .upload-area { display:flex; gap:10px; margin-bottom:15px; }
-    .image-preview { display:flex; flex-wrap:wrap; gap:10px; }
-    .preview-img { width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid #e2e8f0; }
-
-    /* Progress-Bar */
-    .progress-bar { width:100%; height:20px; background:#e2e8f0; border-radius:10px; overflow:hidden; margin:15px 0; }
-    .progress-fill { height:100%; width:0%; background:linear-gradient(45deg,#48bb78,#38a169); transition:width .3s ease; }
-
-    /* Testbereich */
-    .test-section { grid-column:1/-1; }
-    .test-content { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
-    .webcam-container, .results-container { background:#f7fafc; padding:20px; border-radius:10px; border:2px solid #e2e8f0; text-align:center; }
-    #webcam { width:100%; max-width:400px; height:300px; border-radius:10px; background:#fff; }
-    .result-item { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .result-label { font-weight:bold; flex:1; }
-    .result-bar { flex:3; height:20px; background:#e2e8f0; border-radius:10px; overflow:hidden; position:relative; }
-    .result-fill { height:100%; width:0%; background:linear-gradient(45deg,#667eea,#764ba2); transition:width .5s ease; }
-    .result-percentage { flex:1; text-align:right; font-weight:bold; }
-
-    /* Statusmeldungen */
-    .status-message { margin:15px 0; padding:12px; border-radius:8px; font-weight:bold; }
-    .status-success { background:#c6f6d5; color:#22543d; }
-    .status-error   { background:#fed7d7; color:#742a2a; }
-    .status-info    { background:#bee3f8; color:#2a4365; }
-
-    @media(max-width:768px) {
-      .main-content, .test-content { grid-template-columns:1fr; }
-    }
-  </style>
 </head>
 <body onload="initializeApp()">
   <div class="container">
@@ -115,7 +59,7 @@
         <div class="results-container">
           <h3>Erkennungsergebnisse</h3>
           <div id="results">
-            <p style="color:#718096;">Trainiere erst das Modell, um Ergebnisse zu sehen.</p>
+            <p class="muted-result">Trainiere erst das Modell, um Ergebnisse zu sehen.</p>
           </div>
         </div>
       </div>
