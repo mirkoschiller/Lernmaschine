@@ -11,12 +11,12 @@
     <link rel="stylesheet" href="styles.css">
 
 </head>
-<body onload="initializeApp()">
+<body>
   <div class="container">
     <div class="header">
       <h1>🤖 Lernmaschine</h1>
       <p>Trainiere dein eigenes Bilderkennungsmodell</p>
-      <span class="version-badge">Version 1.1</span>
+      <span class="version-badge">Version 1.2</span>
     </div>
 
     <div class="main-content">
@@ -25,8 +25,8 @@
         <h2><span class="step-number">1</span> Daten sammeln</h2>
         <div id="classes-container"></div>
         <div class="controls">
-          <button class="btn btn-primary" onclick="addClass()">+ Klasse hinzufügen</button>
-          <button class="btn btn-secondary" onclick="clearAllData()">Alle Daten löschen</button>
+          <button class="btn btn-primary" id="add-class-btn">+ Klasse hinzufügen</button>
+          <button class="btn btn-secondary" id="clear-data-btn">Alle Daten löschen</button>
         </div>
       </div>
 
@@ -36,7 +36,7 @@
         <p id="training-info">Sammle mindestens 5 Bilder pro Klasse.</p>
         <div class="progress-bar"><div class="progress-fill" id="training-progress"></div></div>
         <div class="controls">
-          <button class="btn btn-success" id="train-btn" onclick="trainModel()" disabled>Modell trainieren</button>
+          <button class="btn btn-success" id="train-btn" disabled>Modell trainieren</button>
         </div>
         <div id="training-status"></div>
       </div>
@@ -50,9 +50,9 @@
           <video id="webcam" autoplay muted></video>
           <canvas id="canvas" class="hidden"></canvas>
           <div class="controls">
-            <button class="btn btn-primary" id="webcam-btn" onclick="toggleWebcam()">Test via Webcam</button>
-            <input type="file" id="test-upload" accept="image/*" class="hidden" onchange="testUploadedImage(this)">
-            <button class="btn btn-secondary" onclick="document.getElementById('test-upload').click()">Bild hochladen</button>
+            <button class="btn btn-primary" id="webcam-btn">Test via Webcam</button>
+            <input type="file" id="test-upload" accept="image/*" class="hidden">
+            <button class="btn btn-secondary" id="test-upload-btn">Bild hochladen</button>
           </div>
           <div id="test-status"></div>
         </div>
@@ -66,213 +66,6 @@
     </div>
   </div>
 
-  <script>
-    let classes = [];
-    let classifier, mobilenetModel;
-    let isWebcamActive = false, webcamStream, predictionLoop;
-    const MAX_CLASSES = 5;
-    const MIN_IMAGES_PER_CLASS = 5;
-    const MAX_IMAGES_PER_CLASS = 20;
-
-    async function initializeApp() {
-      // Load MobileNet + KNN
-      mobilenetModel = await mobilenet.load();
-      classifier     = knnClassifier.create();
-      // zwei Default-Klassen
-      addClass(); addClass();
-      renderClasses();
-    }
-
-    function addClass() {
-      if (classes.length >= MAX_CLASSES) { showStatus(`Max. ${MAX_CLASSES} Klassen erlaubt.`, 'error'); return; }
-      classes.push({ name:`Klasse ${classes.length+1}`, images:[], features:[] });
-      renderClasses();
-    }
-
-    function renderClasses() {
-      const container = document.getElementById('classes-container');
-      container.innerHTML = '';
-      classes.forEach((c,i) => {
-        const div = document.createElement('div'); div.className='class-container';
-        div.innerHTML = `
-          <div class="class-header">
-            <input class="class-name" value="${c.name}" onchange="updateClassName(${i},this.value)">
-            <div class="image-count">${c.images.length} Bilder</div>
-            <button class="btn btn-danger" onclick="removeClass(${i})">×</button>
-          </div>
-          <div class="upload-area">
-            <input type="file" id="upload-${i}" accept="image/*" multiple class="hidden"
-                   onchange="uploadImages(${i},this)">
-            <button class="btn btn-secondary" onclick="document.getElementById('upload-${i}').click()">📁 Hochladen</button>
-            <button class="btn btn-secondary" onclick="startWebcamCapture(${i})">📸 Webcam</button>
-          </div>
-          <div class="image-preview" id="preview-${i}"></div>
-        `;
-        container.appendChild(div);
-        renderPreview(i);
-      });
-      updateTrainButton();
-    }
-
-    function updateClassName(i,name){ classes[i].name=name; renderClasses(); }
-    function removeClass(i){
-      if(classes.length<=2){ showStatus('Mind. 2 Klassen nötig.', 'error'); return; }
-      classes.splice(i,1); renderClasses();
-    }
-
-    function renderPreview(i){
-      const p = document.getElementById(`preview-${i}`);
-      p.innerHTML='';
-      classes[i].images.forEach((src,j)=>{
-        const img=document.createElement('img'); img.src=src; img.className='preview-img';
-        img.onclick=()=>{ classes[i].images.splice(j,1); classes[i].features.splice(j,1); renderClasses(); };
-        p.appendChild(img);
-      });
-    }
-
-    function showStatus(msg,type){
-      const div=document.createElement('div'); 
-      div.className=`status-message status-${type}`; div.innerText=msg;
-      document.querySelector('.container').prepend(div);
-      setTimeout(()=>div.remove(),3000);
-    }
-
-    async function uploadImages(idx,input){
-      for(const f of input.files){
-        if(classes[idx].images.length>=MAX_IMAGES_PER_CLASS){ showStatus(`Max.${MAX_IMAGES_PER_CLASS} Bilder/Klasse.`, 'error'); break; }
-        const src=await new Promise(r=>{
-          const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsDataURL(f);
-        });
-        classes[idx].images.push(src);
-        const feats=await extractFeatures(src);
-        classes[idx].features.push(feats);
-      }
-      renderPreview(idx);
-      updateTrainButton();
-    }
-
-    async function startWebcamCapture(idx){
-      try{
-        const stream=await navigator.mediaDevices.getUserMedia({video:true});
-        const vid=document.createElement('video'); vid.srcObject=stream; vid.autoplay=true;
-        const overlay=document.createElement('div'); overlay.style=`position:fixed;top:0;left:0;
-          width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;
-          justify-content:center;flex-direction:column;z-index:1000;`;
-        const cap=document.createElement('button'); cap.className='btn btn-success'; cap.innerText='📸 Aufnahme';
-        const close=document.createElement('button'); close.className='btn btn-danger'; close.innerText='❌';
-        overlay.append(vid,cap,close); document.body.append(overlay);
-        cap.onclick=async()=>{
-          if(classes[idx].images.length>=MAX_IMAGES_PER_CLASS){
-            showStatus(`Max.${MAX_IMAGES_PER_CLASS} Bilder/Klasse.`, 'error');
-            return;
-          }
-          const cvs=document.createElement('canvas'); cvs.width=224; cvs.height=224;
-          cvs.getContext('2d').drawImage(vid,0,0,224,224);
-          const src=cvs.toDataURL();
-          classes[idx].images.push(src);
-          classes[idx].features.push(await extractFeatures(src));
-          renderClasses(); showStatus('Bild aufgenommen!','success');
-        };
-        close.onclick=()=>{ stream.getTracks().forEach(t=>t.stop()); overlay.remove(); };
-      }catch(e){ showStatus('Webcam-Fehler','error'); }
-    }
-
-    async function extractFeatures(src){
-      return new Promise(r=>{
-        const img=new Image(); img.crossOrigin='anonymous';
-        img.onload=()=>{
-          const cvs=document.createElement('canvas'); cvs.width=224; cvs.height=224;
-          cvs.getContext('2d').drawImage(img,0,0,224,224);
-          const t=tf.browser.fromPixels(cvs).expandDims(0).div(255);
-          mobilenetModel.infer(t,true).data().then(f=>{
-            t.dispose(); r(Array.from(f));
-          });
-        };
-        img.src=src;
-      });
-    }
-
-    function updateTrainButton(){
-      const btn=document.getElementById('train-btn');
-      const ready=classes.every(c=>c.images.length>=MIN_IMAGES_PER_CLASS);
-      btn.disabled=!ready;
-    }
-
-    async function trainModel(){
-      const btn=document.getElementById('train-btn'), bar=document.getElementById('training-progress');
-      btn.disabled=true; showStatus('Training startet…','info');
-      classifier.clearAllClasses();
-      for(let p=0;p<=100;p+=10){ bar.style.width=p+'%'; await new Promise(r=>setTimeout(r,200)); }
-      // KNN-Daten einfügen
-      classes.forEach((c,i)=>{
-        c.features.forEach(f=>{
-          const tensor=tf.tensor(f,[1,f.length]);
-          classifier.addExample(tensor,i);
-          tensor.dispose();
-        });
-      });
-      showStatus('Training fertig!','success');
-    }
-
-    async function toggleWebcam(){
-      const btn=document.getElementById('webcam-btn');
-      if(!isWebcamActive){
-        if(!classifier || classifier.getNumClasses()===0){ showStatus('Zuerst trainieren','error'); return; }
-        webcamStream=await navigator.mediaDevices.getUserMedia({video:true});
-        document.getElementById('webcam').srcObject=webcamStream;
-        isWebcamActive=true; btn.innerText='Live stoppen'; btn.className='btn btn-danger';
-        predictionLoop=setInterval(predictWebcam,500);
-      } else {
-        clearInterval(predictionLoop); webcamStream.getTracks().forEach(t=>t.stop());
-        isWebcamActive=false; btn.innerText='Test via Webcam'; btn.className='btn btn-primary';
-      }
-    }
-
-    async function predictWebcam(){
-      
-      
-      const vid=document.getElementById('webcam'), cvs=document.getElementById('canvas');
-      cvs.width=224; cvs.height=224;
-      cvs.getContext('2d').drawImage(vid,0,0,224,224);
-      const t=tf.browser.fromPixels(cvs).expandDims(0).div(255);
-      const activation=mobilenetModel.infer(t,true);
-      const res=await classifier.predictClass(activation);
-      displayResults(res.confidences);
-      activation.dispose();
-      t.dispose();
-      
-    }
-
-    function displayResults(confidences) {
-  const container = document.getElementById('results');
-  container.innerHTML = '';
-  classes.forEach((cls, i) => {
-    const confidence = confidences[i] || 0;
-    const div = document.createElement('div');
-    div.className = 'result-item';
-    div.innerHTML = `
-      <div class="result-label">${cls.name}</div>
-      <div class="result-bar">
-        <div class="result-fill" style="width:${(confidence * 100).toFixed(1)}%"></div>
-      </div>
-      <div class="result-percentage">${(confidence * 100).toFixed(1)}%</div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-
-    async function testUploadedImage(input){
-      if(classifier.getNumClasses()===0){ showStatus('Zuerst trainieren','error'); return; }
-      const file=input.files[0]; if(!file) return;
-      const src=await new Promise(r=>{ const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsDataURL(file); });
-      const feats=await extractFeatures(src);
-      const activation=tf.tensor(feats,[1,feats.length]);
-      const res=await classifier.predictClass(activation);
-      displayResults(res.confidences);
-      activation.dispose();
-      
-    }
-  </script>
+    <script src="app.js" defer></script>
 </body>
 </html>
