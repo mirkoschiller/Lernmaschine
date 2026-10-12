@@ -4,10 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lernmaschine</title>
-  <!-- TensorFlow.js & KNN Classifier -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.2/dist/knn-classifier.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 
 </head>
@@ -16,8 +12,10 @@
     <div class="header">
       <h1>🤖 Lernmaschine</h1>
       <p>Trainiere dein eigenes Bilderkennungsmodell</p>
-      <span class="version-badge">Version 1.2</span>
+      <span class="version-badge">Version 1.3</span>
     </div>
+    <noscript>Bitte aktivieren Sie JavaScript, um die Lernmaschine zu verwenden.</noscript>
+    <div id="app-status" class="status-message status-info" role="status" aria-live="polite">Die Lernmaschine startet …</div>
 
     <div class="main-content">
       <!-- Schritt 1: Klassifizierung -->
@@ -34,11 +32,12 @@
       <div class="section">
         <h2><span class="step-number">2</span> Modell trainieren</h2>
         <p id="training-info">Sammle mindestens 5 Bilder pro Klasse.</p>
-        <div class="progress-bar"><div class="progress-fill" id="training-progress"></div></div>
+        <div class="progress-bar" role="progressbar" aria-label="Trainingsfortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="training-progress"></div></div>
         <div class="controls">
           <button class="btn btn-success" id="train-btn" disabled>Modell trainieren</button>
         </div>
-        <div id="training-status"></div>
+        <div id="training-status" role="status" aria-live="polite"></div>
+        <p class="muted-result training-note">Die KI wird beim ersten Training geladen. Deine Bilder bleiben in diesem Browser. Beim Neuladen gehen die Daten verloren.</p>
       </div>
     </div>
 
@@ -47,17 +46,19 @@
       <h2><span class="step-number">3</span> Modell testen</h2>
       <div class="test-content">
         <div class="webcam-container">
-          <video id="webcam" autoplay muted></video>
+          <video id="webcam" autoplay muted playsinline aria-label="Webcam-Vorschau"></video>
+          <img id="test-image" class="hidden" alt="Aktuelles Testbild">
           <canvas id="canvas" class="hidden"></canvas>
           <div class="controls">
-            <button class="btn btn-primary" id="webcam-btn">Test via Webcam</button>
+            <button class="btn btn-primary" id="webcam-btn" disabled>Test via Webcam</button>
             <input type="file" id="test-upload" accept="image/*" class="hidden">
-            <button class="btn btn-secondary" id="test-upload-btn">Bild hochladen</button>
+            <button class="btn btn-secondary" id="test-upload-btn" disabled>Bild hochladen</button>
           </div>
-          <div id="test-status"></div>
+          <div id="test-status" role="status" aria-live="polite"></div>
         </div>
         <div class="results-container">
           <h3>Erkennungsergebnisse</h3>
+          <p class="muted-result">Die Balken zeigen die Stimmenanteile der ähnlichsten Trainingsbilder – keine Sicherheit, dass die Antwort richtig ist.</p>
           <div id="results">
             <p class="muted-result">Trainiere erst das Modell, um Ergebnisse zu sehen.</p>
           </div>

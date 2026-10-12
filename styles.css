@@ -113,3 +113,31 @@ a { color: inherit; text-decoration: none; }
 }
 
 .muted-result { color: var(--muted); }
+
+[hidden], .hidden { display: none !important; }
+.status-message:empty { display: none; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.section, .class-name { min-width: 0; }
+.class-name { width: 100%; }
+.image-count { white-space: nowrap; font-size: .85rem; }
+.test-section { margin-top: 24px; }
+.training-note { margin-top: 20px; }
+.preview-delete { padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: 8px; }
+.preview-delete img { display: block; }
+.preview-delete:hover { outline: 2px solid #fca5a5; }
+.result-label { overflow-wrap: anywhere; min-width: 0; }
+.results-container h3 { margin-bottom: 10px; }
+.results-container > p { margin-bottom: 20px; font-size: .85rem; }
+#test-image { width: 100%; max-width: 400px; height: 300px; object-fit: contain; background: #000; border-radius: 10px; }
+.capture-dialog { margin: auto; width: min(560px, calc(100% - 24px)); max-height: 95vh; padding: 24px; border: 1px solid var(--border); border-radius: 22px; background: var(--card); color: var(--text); }
+.capture-dialog::backdrop { background: rgba(0,0,0,.75); }
+.capture-dialog video { width: 100%; max-height: 55vh; background: #000; border-radius: 12px; margin: 12px 0; }
+.capture-dialog p { margin-bottom: 16px; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 480px) {
+  .section { padding: 16px; }
+  .class-header { flex-wrap: wrap; gap: 8px; }
+  .class-name { flex-basis: 100%; }
+  .result-label { flex: 2; }
+  .result-percentage { min-width: 65px; }
+}
